@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+    d>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyStride Admin Page</title>
+    <link rel="icon" href="logo.png" type="image/x-icon"> <!-- Favicon Link -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -151,6 +152,11 @@
         button:hover {
             background-color: #0056b3;
         }
+        .header-logo {
+    width: 40px; /* Set the width of the logo */
+    vertical-align: middle; /* Align the logo vertically with the text */
+    margin-right: 10px; /* Add some space between the logo and the title */
+}
     </style>
 </head>
 <body>
@@ -167,9 +173,13 @@
         </div>
         <button id="loginBtn">Login</button>
     </div>
+
     <!-- Admin Panel -->
     <div id="adminPanel" style="display:none;">
-        <div class="header">StudyStride Admin Dashboard</div>
+        <div class="header">
+            <img src="logo.png" alt="Logo" class="header-logo"> <!-- Logo Image -->
+            StudyStride Admin Dashboard
+        </div>
         <div class="drawer">
             <a data-section="events">Events</a>
             <a data-section="comments">Comments Section</a>
