@@ -146,6 +146,36 @@ async function fetchDocuments() {
             `;
             tableBody.appendChild(row);
 
+            // Add event listener for the delete button for the background image
+const deleteImageBtn = row.querySelector('.deleteImageBtn');
+if (deleteImageBtn) {
+    deleteImageBtn.addEventListener('click', async (e) => {
+        const eventId = e.target.getAttribute('data-id');
+        const confirmDelete = confirm("Are you sure you want to delete this?"); // Prompt for confirmation
+        console.log("Confirm delete:", confirmDelete); // Log the confirmation result
+
+        if (confirmDelete) { // Only proceed if the user confirms
+            try {
+                const eventRef = doc(db, "eventsAdmin", eventId);
+                const eventDoc = await getDoc(eventRef);
+                if (eventDoc.data().backgroundImageUrl) {
+                    const imageRef = ref(storage, eventDoc.data().backgroundImageUrl);
+                    await deleteObject(imageRef); // Delete from storage
+                    await updateDoc(eventRef, { backgroundImageUrl: "" }); // Remove URL from Firestore
+                }
+                alert("Image deleted successfully.");
+                fetchDocuments(); // Refresh table
+            } catch (error) {
+                console.error("Error deleting image: ", error);
+                alert("Failed to delete image. Please try again.");
+            }
+        } else {
+            // If the user cancels, you can log or alert if needed
+            console.log("Image deletion canceled.");
+        }
+    });
+}
+
             // Also add the event link to the comments section
             if (eventList) {
                 eventList.innerHTML += `
@@ -228,7 +258,7 @@ async function fetchComments(eventId) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${data.commentText}</td>
-                    <td>${data.fName || "Anonymous"}</td>
+                   <td>${data.fname || data.fName || "Anonymous"}</td>
                     <td>${new Date(data.timestamp).toLocaleString()}</td>
                     <td>${data.userId || "N/A"}</td>
                     <td><button class="deleteCommentBtn" data-id="${doc.id}" data-event-id="${eventId}">Delete</button></td>
@@ -489,12 +519,31 @@ document.getElementById('tableBody').addEventListener('click', async (event) => 
 
 // Section Navigation
 document.querySelectorAll('.drawer a').forEach((link) => {
-    link.addEventListener('click', (event) => {
+    link.addEventListener('click', async (event) => {
         const targetSection = event.target.getAttribute('data-section');
+
+        // Hide all sections
         document.querySelectorAll('.section').forEach((section) => {
             section.classList.remove('active');
         });
-        document.getElementById(targetSection).classList.add('active');
+
+        // Show the selected section
+        const selectedSection = document.getElementById(targetSection);
+        selectedSection.classList.add('active');
+
+        // Refresh content based on the selected section
+        if (targetSection === 'events') {
+            fetchDocuments(); // Refresh events
+        } else if (targetSection === 'photos') {
+            fetchPhotos(); // Refresh photos
+        } else if (targetSection === 'comments') {
+            // You might want to fetch comments for a specific event here
+            // For example, you could set a default event ID to fetch comments for
+            const defaultEventId = 'someDefaultEventId'; // Replace with actual default event ID
+            fetchComments(defaultEventId); // Refresh comments
+        } else if (targetSection === 'users') {
+            fetchUsers(); // Refresh users
+        }
     });
 });
 
