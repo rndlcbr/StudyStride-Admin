@@ -13,15 +13,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-image: url('bgg.jpg'); /* Change this to your image path */
-            background-size: cover; /* Cover the entire viewport */
-            background-position: center; /* Center the image */
-            background-repeat: no-repeat; /* Prevent the image from repeating */
-        }
+         body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url('bgg.jpg'); /* Change this to your image path */
+    background-size: cover; /* Cover the entire viewport */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-attachment: fixed; /* Keep the background fixed during scrolling */
+    height: 100vh; /* Ensure the body takes the full height of the viewport */
+}
 
         .no-background {
             background: none !important; /* Remove background */
@@ -131,13 +133,13 @@
         }
 
         input {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+    display: block;
+    width: 100%;
+    margin: 10px 0; /* Ensure there is space between input fields */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
 
         button {
             padding: 10px;
