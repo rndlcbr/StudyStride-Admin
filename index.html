@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyStride Admin Page</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <style>
+          body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('bgg.jpg'); /* Change this to your image path */
+            background-size: cover; /* Cover the entire viewport */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent the image from repeating */
+        }
+
+        .no-background {
+            background: none !important; /* Remove background */
+        }
+
+        img {
+            width: 100%; /* Make the image take the full width of its container */
+            height: 100%; /* Maintain the aspect ratio */
+            object-fit: cover; /* Cover the container while maintaining aspect ratio */
+        }
+
+        .photo-gallery {
+            padding: 20px; /* Add some padding around the gallery */
+        }
+        .password-container {
+            display: flex;
+            align-items: center;
+        }
+        .toggle-password {
+            background: #356acd;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* Header Styles */
+        .header {
+            background-color: #356acd;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Drawer Menu Styles */
+        .drawer {
+            width: 250px;
+            background-color: #ffffff;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drawer a {
+            padding: 15px;
+            text-decoration: none;
+            color: black;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        .drawer a:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2b91d;
+            color: black;
+        }
+
+        /* Login Card Styles */
+        .card {
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            margin: 100px auto;
+        }
+
+        .logo {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img src="logo.png" alt="Logo" class="logo">
+        <h2>StudyStride Admin</h2>
+        <h3>Login</h3>
+        <input type="email" id="email" placeholder="Email" required>
+        <div class="password-container">
+            <input type="password" id="password" placeholder="Password" required>
+            <button class="toggle-password" id="togglePassword">
+                <i class="fas fa-eye"></i>
+            </button>
+        </div>
+        <button id="loginBtn">Login</button>
+    </div>
+    <!-- Admin Panel -->
+    <div id="adminPanel" style="display:none;">
+        <div class="header">StudyStride Admin Dashboard</div>
+        <div class="drawer">
+            <a data-section="events">Events</a>
+            <a data-section="comments">Comments Section</a>
+            <a data-section="photos">Uploaded Photos</a>
+            <a id="logoutBtn">Log Out</a> <!-- New Log Out button -->
+        </div>
+        <div class="main-content">
+            <!-- Events Section -->
+            <div id="events" class="section">
+                <h2>Add/Edit Event</h2>
+                <input type="text" id="eventTitle" placeholder="Title">
+                
+                <div style="display: flex; align-items: center;">
+                    <input type="text" id="eventDate" placeholder="Date (DD-MM-YYYY)" readonly>
+                </div>
+                
+                <input type="text" id="eventDateTime" placeholder="DateTime">
+                <input type="text" id="eventDescription" placeholder="Description">
+                <input type="text" id="eventID" placeholder="Event ID">
+                <button id="addEventBtn">Add Event</button>
+                
+                <div id="documentTable" style="display:none;">
+                    <h2>Academic Calendar</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Event ID</th>
+                                <th>Date</th>
+                                <th>DateTime</th>
+                                <th>Description</th>
+                                <th>Background Image</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Uploaded Photos Section -->
+            <div id="photos" class="section">
+                <h2>Uploaded Photos</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Uploaded Photo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="photoTableBody"></tbody>
+                </table>
+            </div>
+            <!-- Comments Section -->
+            <div id="comments" class="section">
+                <h2>Comments Section</h2>
+                <h3 id="selectedEventName">Select an event to view comments</h3>
+                <ul id="eventList"></ul>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Comment</th>
+                            <th>Author</th>
+                            <th>Timestamp</th>
+                            <th>User ID</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="commentsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
