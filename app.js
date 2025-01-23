@@ -294,7 +294,7 @@ function addImageButtonListeners() {
     });
 }
 
-// Fetch photos and render them in the photo table
+// Function to fetch photos and render them in the photo table
 async function fetchPhotos() {
     const photoTableBody = document.getElementById('photoTableBody');
     photoTableBody.innerHTML = ""; // Clear existing rows
@@ -340,8 +340,11 @@ async function fetchPhotos() {
         btn.addEventListener('click', async (e) => {
             const eventId = e.target.getAttribute('data-id');
             const url = e.target.getAttribute('data-url');
-            await deletePhoto(eventId, url);
-            fetchPhotos(); // Refresh table
+            const confirmDelete = confirm("Are you sure you want to delete this photo?");
+            if (confirmDelete) {
+                await deletePhoto(eventId, url);
+                fetchPhotos(); // Refresh table
+            }
         });
     });
 }
