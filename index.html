@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyStride Admin Page</title>
-    <link rel="icon" href="logo.png" type="image/png"> <!-- If using PNG -->
+    <link rel="icon" href="logo.png" type="image/png">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -13,35 +13,33 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
-         body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-image: url('bg.jpg'); /* Change this to your image path */
-    background-size: cover; /* Cover the entire viewport */
-    background-position: center; /* Center the image */
-    background-repeat: no-repeat; /* Prevent the image from repeating */
-    background-attachment: fixed; /* Keep the background fixed during scrolling */
-    height: 100vh; /* Ensure the body takes the full height of the viewport */
-}
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            height: 100vh;
+        }
 
         .no-background {
-            background: none !important; /* Remove background */
+            background: none !important;
         }
 
         img {
-            width: 100%; /* Make the image take the full width of its container */
-            height: 100%; /* Maintain the aspect ratio */
-            object-fit: cover; /* Cover the container while maintaining aspect ratio */
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        .photo-gallery {
-            padding: 20px; /* Add some padding around the gallery */
-        }
         .password-container {
             display: flex;
             align-items: center;
         }
+
         .toggle-password {
             background: #356acd;
             border: none;
@@ -51,26 +49,45 @@
 
         /* Header Styles */
         .header {
-            background-color: #356acd;
-            color: white;
-            padding: 10px;
-            text-align: center;
+    background-color: #356acd;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    position: fixed; /* Fixes the header at the top */
+    top: 0; /* Aligns the header to the top of the viewport */
+    width: 100%; /* Ensures the header spans the full width of the viewport */
+    z-index: 1000; /* Ensures the header is above other content */
+}
+
+        .hamburger {
+            position: absolute;
+            left: 10px;
+            top: 10px;
             font-size: 24px;
-            font-weight: bold;
+            cursor: pointer;
+            display: block;
         }
 
         /* Drawer Menu Styles */
         .drawer {
-            width: 250px;
-            background-color: #ffffff;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-        }
+    width: 250px;
+    background-color: #ffffff;
+    height: 100vh;
+    position: fixed;
+    left: -250px;
+    top: 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: left 0.3s ease;
+    z-index: 1100; /* Ensures the drawer is above the header */
+}
+
+       .drawer.open {
+    left: 0;
+}
 
         .drawer a {
             padding: 15px;
@@ -86,8 +103,14 @@
 
         /* Main Content Styles */
         .main-content {
-            margin-left: 250px;
+            margin-left: 0;
             padding: 20px;
+            transition: margin-left 0.3s ease;
+            padding-top: 60px;
+        }
+
+        .main-content.shifted {
+            margin-left: 250px;
         }
 
         .section {
@@ -98,52 +121,35 @@
             display: block;
         }
 
-        /* Table Styles */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #f2b91d;
-            color: black;
-        }
+    
 
         .card {
-    background-color: rgba(255, 255, 255, 0.6); /* Semi-transparent background */
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    width: 350px;
-    text-align: center;
-    margin: 100px auto; /* Center the card with margin */
-}
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 350px;
+            text-align: center;
+            margin: 100px auto;
+        }
 
-input {
-    display: block;
-    width: 95%;
-    margin: 10px 0; /* Ensure there is space between input fields */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
+        input {
+            display: block;
+            width: 95%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
         .logo {
             width: 200px;
             margin-bottom: 20px;
         }
 
-      
-
         button {
-            padding: 10px;
+            margin-right: 5px; /* Adds space between buttons */
+            padding: 5px 10px; /* Adds padding inside the buttons */
             background-color: #007bff;
             color: white;
             border: none;
@@ -155,11 +161,121 @@ input {
         button:hover {
             background-color: #0056b3;
         }
+
         .header-logo {
-    width: 40px; /* Set the width of the logo */
-    vertical-align: middle; /* Align the logo vertically with the text */
-    margin-right: 10px; /* Add some space between the logo and the title */
+            width: 40px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        #important-events-photos table {
+            width: 100%;
+            table-layout: auto;
+        }
+
+        #important-events-photos th,
+        #important-events-photos td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .main-content.shifted {
+                margin-left: 250px;
+            }
+        }
+
+        .event-card {
+    background-color: #356acd;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 500px;
+    text-align: center;
+    margin: 20px auto;
+    color: white; /* Ensure text is readable on the blue background */
 }
+
+table {
+    width: 100%;
+    border-collapse: collapse; /* Change to collapse for solid borders */
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: 'Helvetica', sans-serif;
+    margin-bottom: 20px;
+}
+
+th, td {
+    border: 1px solid black; /* Sets the grid lines to black */
+    padding: 10px;
+}
+
+th {
+    background-color: #0572bc;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+
+td {
+    color: black;
+    background-color: rgba(255, 255, 255, 0.6);
+    text-align: left;
+}
+
+th:first-child,
+td:first-child {
+    border-top-left-radius: 8px;
+}
+
+th:last-child,
+td:last-child {
+    border-top-right-radius: 8px;
+}
+
+.deleteBtn, .deleteImageBtn, .deleteCommentBtn, .deleteImportantPhotoBtn, .deleteUserBtn {
+    background-color: #ff4d4d; /* Red background color */
+    color: white; /* White text color */
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-right: 5px; /* Space between buttons */
+}
+
+.deleteBtn:hover, .deleteImageBtn:hover, .deleteCommentBtn:hover, .deleteImportantPhotoBtn:hover, .deleteUserBtn:hover {
+    background-color: #cc0000; /* Darker red on hover */
+}
+
+.bold-text {
+    font-weight: bold;
+    vertical-align: middle;
+}
+.eventLink {
+    font-weight: bold;
+    vertical-align: middle;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #0056b3;
+    font-size: 20px;
+}
+
+.header-container {
+    display: flex; /* Enable Flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically (if height is defined) */
+    height: 100px; /* Set a height for vertical centering */
+}
+
+#selectedEventName {
+    margin: 0; /* Remove default margin */
+}
+
     </style>
 </head>
 <body>
@@ -180,48 +296,49 @@ input {
     <!-- Admin Panel -->
     <div id="adminPanel" style="display:none;">
         <div class="header">
-            <img src="logo.png" alt="Logo" class="header-logo"> <!-- Logo Image -->
+            <span class="hamburger" id="hamburger">&#9776;</span>
+            <img src="logo.png" alt="Logo" class="header-logo">
             StudyStride Admin Dashboard
         </div>
-        <div class="drawer">
+        <div class="drawer" id="drawer">
             <a data-section="events">Events</a>
             <a data-section="comments">Comments Section</a>
-            <a data-section="photos">Uploaded Photos</a>
-            <a id="logoutBtn">Log Out</a> <!-- New Log Out button -->
+            <a data-section="photos">Events Highlight Photos</a>
+            <a data-section="important-events-photos">Important Events Photos</a>
+            <a data-section="users">Users</a>
+            <a id="logoutBtn">Log Out</a>
         </div>
-        <div class="main-content">
+        <div class="main-content" id="mainContent" style="padding-top: 60px;">
             <!-- Events Section -->
-            <div id="events" class="section">
-                <h2>Add/Edit Event</h2>
-                <input type="text" id="eventTitle" placeholder="Title">
-                
-                <div style="display: flex; align-items: center;">
-                    <input type="text" id="eventDate" placeholder="Date (DD-MM-YYYY)" readonly>
-                </div>
-                
-                <input type="text" id="eventDateTime" placeholder="DateTime">
-                <input type="text" id="eventDescription" placeholder="Description">
-                <input type="text" id="eventID" placeholder="Event ID">
-                <button id="addEventBtn">Add Event</button>
-                
-                <div id="documentTable" style="display:none;">
-                    <h2>Academic Calendar</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Event ID</th>
-                                <th>Date</th>
-                                <th>DateTime</th>
-                                <th>Description</th>
-                                <th>Background Image</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody"></tbody>
-                    </table>
-                </div>
-            </div>
+<div id="events" class="section">
+    <div class="event-card">
+        <h2>Add/Edit Event</h2>
+        <input type="text" id="eventTitle" placeholder="Title">
+        <div style="display: flex; align-items: center;">
+            <input type="text" id="eventDate" placeholder="Date (DD-MM-YYYY)" readonly>
+        </div>
+        <input type="text" id="eventDateTime" placeholder="DateTime">
+        <input type="text" id="eventDescription" placeholder="Description">
+        <button id="addEventBtn">Add Event</button>
+    </div>
+    <div id="documentTable" style="display:none;">
+        <h2>Academic Calendar</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Event ID</th>
+                    <th>Date</th>
+                    <th>DateTime</th>
+                    <th>Description</th>
+                    <th>Background Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
             <!-- Uploaded Photos Section -->
             <div id="photos" class="section">
                 <h2>Uploaded Photos</h2>
@@ -235,11 +352,39 @@ input {
                     <tbody id="photoTableBody"></tbody>
                 </table>
             </div>
+            <!-- Important Events Photos Section -->
+            <div id="important-events-photos" class="section">
+                <h2>Important Events Photos</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Uploaded Photo</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="importantPhotosTableBody"></tbody>
+                </table>
+            </div>
+            <!-- Users Section -->
+            <div id="users" class="section">
+                <h2>Signed-In Users</h2>
+                <table>
+                    <thead
+                        <tr>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
             <!-- Comments Section -->
             <div id="comments" class="section">
                 <h2>Comments Section</h2>
-                <h3 id="selectedEventName">Select an event to view comments</h3>
                 <ul id="eventList"></ul>
+                <div class="header-container">
+                    <h2 id="selectedEventName" class="center">Select an event to view comments</h2>
+                </div>
                 <table>
                     <thead>
                         <tr>
@@ -257,5 +402,15 @@ input {
     </div>
 
     <script type="module" src="app.js"></script>
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const drawer = document.getElementById('drawer');
+        const mainContent = document.getElementById('mainContent');
+
+        hamburger.addEventListener('click', () => {
+            drawer.classList.toggle('open');
+            mainContent.classList.toggle('shifted');
+        });
+    </script>
 </body>
 </html>
