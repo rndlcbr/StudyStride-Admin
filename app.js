@@ -217,15 +217,41 @@ function addEditButtonListeners() {
             const description = e.target.getAttribute('data-description');
 
             // Populate the input fields with the event data
-            document.getElementById('eventTitle').value = title;
-            document.getElementById('eventDate').value = date;
-            document.getElementById('eventDateTime').value = dateTime;
-            document.getElementById('eventDescription').value = description;
-            document.getElementById('eventID').value = eventId; // Set the event ID for updating
+            const eventTitleInput = document.getElementById('eventTitle');
+            const eventDateInput = document.getElementById('eventDate');
+            const eventDateTimeInput = document.getElementById('eventDateTime');
+            const eventDescriptionInput = document.getElementById('eventDescription');
+            const eventIDInput = document.getElementById('eventID');
+            const addEventBtn = document.getElementById('addEventBtn');
+            const eventCard = document.querySelector('.event-card');
+            const documentTable = document.getElementById('documentTable');
+
+            if (eventTitleInput) eventTitleInput.value = title;
+            if (eventDateInput) eventDateInput.value = date;
+            if (eventDateTimeInput) eventDateTimeInput.value = dateTime;
+            if (eventDescriptionInput) eventDescriptionInput.value = description;
+            if (eventIDInput) eventIDInput.value = eventId; // Set the event ID for updating
 
             // Change the button text to "Update"
-            document.getElementById('addEventBtn').innerText = 'Update Event';
-            document.getElementById('addEventBtn').setAttribute('data-id', eventId); // Set the data-id attribute
+            if (addEventBtn) {
+                addEventBtn.innerText = 'Update Event';
+                addEventBtn.setAttribute('data-id', eventId); // Set the data-id attribute
+            }
+
+            // Show the event card and hide the document table
+            if (eventCard) eventCard.style.display = 'block'; // Show the event card
+            if (documentTable) documentTable.style.display = 'none'; // Hide the document table
+
+            // Scroll to the top of the page
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // Smooth scroll
+            });
+
+            // Use setTimeout to ensure the focus is set after the card is displayed
+            setTimeout(() => {
+                if (eventTitleInput) eventTitleInput.focus(); // Focus on the title input
+            }, 100); // Adjust the delay as needed
         });
     });
 }
@@ -442,11 +468,22 @@ async function uploadImage(eventId) {
 }
 
 // Add this event listener to automatically set eventID to the title
-document.getElementById('eventTitle').addEventListener('input', function() {
-    const title = this.value.trim();
-    document.getElementById('eventID').value = title; // Automatically set eventID to title
-});
+const eventTitleInput = document.getElementById('eventTitle');
+const eventIDInput = document.getElementById('eventID');
 
+if (eventTitleInput && eventIDInput) {
+    eventTitleInput.addEventListener('input', function() {
+        const title = this.value.trim();
+        eventIDInput.value = title; // Automatically set eventID to title
+    });
+} else {
+    if (!eventTitleInput) {
+        console.error('Element with ID eventTitle not found');
+    }
+    if (!eventIDInput) {
+        console.error('Element with ID eventID not found');
+    }
+}
 // Modify the Add or Update Event Functionality
 document.getElementById('addEventBtn').addEventListener('click', async () => {
     const eventTitle = document.getElementById('eventTitle').value;
@@ -454,7 +491,6 @@ document.getElementById('addEventBtn').addEventListener('click', async () => {
     const eventDateTime = document.getElementById('eventDateTime').value;
     const eventDescription = document.getElementById('eventDescription').value;
     const eventID = eventTitle.trim(); // Use title as eventID
-    const docId = document.getElementById('addEventBtn').getAttribute('data-id');
 
     if (!eventTitle || !eventDate || !eventDateTime || !eventDescription) {
         alert("All fields are required!");
@@ -462,11 +498,12 @@ document.getElementById('addEventBtn').addEventListener('click', async () => {
     }
 
     try {
-        if (docId) {
+        const docRef = doc(db, "eventsAdmin", eventID);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
             // Update existing document
-            const docRef = doc(db, "eventsAdmin", docId);
             await updateDoc(docRef, {
-                eventID: eventID,
                 title: eventTitle,
                 date: eventDate,
                 dateTime: eventDateTime,
@@ -475,8 +512,7 @@ document.getElementById('addEventBtn').addEventListener('click', async () => {
             alert("Event updated successfully.");
         } else {
             // Add new document
-            const newDocRef = doc(db, "eventsAdmin", eventID);
-            await setDoc(newDocRef, {
+            await setDoc(docRef, {
                 eventID: eventID,
                 title: eventTitle,
                 date: eventDate,
