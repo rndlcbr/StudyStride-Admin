@@ -1,7 +1,7 @@
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-import { getFirestore, collection, doc, getDocs, updateDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import {  getFirestore, collection, doc, getDocs, updateDoc, deleteDoc, getDoc, setDoc, deleteField  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
 
 // Firebase configuration
@@ -579,7 +579,9 @@ async function fetchImportantPhotos() {
 
         if (docSnap.exists()) {
             const data = docSnap.data();
-            const images = [data.image1, data.image2, data.image3, data.image4];
+            const images = Object.keys(data) // Get all keys in the document
+                .filter(key => key.startsWith('image')) // Filter keys that start with 'image'
+                .map(key => data[key]); // Map to their corresponding URLs
 
             images.forEach((imageUrl, index) => {
                 const row = document.createElement('tr');
@@ -602,6 +604,50 @@ async function fetchImportantPhotos() {
     }
 }
 
+// Function to handle the upload button click
+document.getElementById('uploadPhotoBtn').addEventListener('click', () => {
+    // Create a file input element
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.click();
+
+    fileInput.onchange = async () => {
+        const file = fileInput.files[0];
+        console.log(`File selected: ${file ? file.name : 'No file selected'}`);
+        if (file) {
+            const user = auth.currentUser ;
+            if (!user) {
+                alert("You must be logged in to upload files.");
+                return;
+            }
+
+            try {
+                // Create a reference to the storage location for the image
+                const storageRef = ref(storage, `importantEvents/image${Date.now()}`); // Use a unique name
+
+                // Upload the new file
+                await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(storageRef);
+
+                // Update the Firestore document with the new image URL
+                const docRef = doc(db, "FILES", "image");
+                await updateDoc(docRef, { [`image${Date.now()}`]: downloadURL }); // Use a unique key
+
+                alert("Image uploaded successfully.");
+                fetchImportantPhotos(); // Refresh table
+            } catch (error) {
+                console.error("Error uploading important photo: ", error.message);
+                alert("Failed to upload image. Please try again.");
+            }
+        } else {
+            alert("No file selected. Please choose a file to upload.");
+        }
+    };
+});
+
+
+
 // Function to add event listeners for important photo buttons
 function addImportantPhotoButtonListeners() {
     document.querySelectorAll('.uploadImportantPhotoBtn, .editImportantPhotoBtn').forEach((btn) => {
@@ -614,6 +660,7 @@ function addImportantPhotoButtonListeners() {
 }
 
 async function uploadImportantPhoto(index) {
+    console.log(`Attempting to upload photo for index: ${index}`);
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
@@ -621,6 +668,7 @@ async function uploadImportantPhoto(index) {
 
     fileInput.onchange = async () => {
         const file = fileInput.files[0];
+        console.log(`File selected: ${file ? file.name : 'No file selected'}`);
         if (file) {
             const user = auth.currentUser ;
             if (!user) {
@@ -652,22 +700,41 @@ async function uploadImportantPhoto(index) {
     };
 }
 
-// Function to delete an important photo
+
+
+
 async function deleteImportantPhoto(index) {
     const confirmDelete = confirm("Are you sure you want to delete this photo?");
     if (confirmDelete) {
         try {
             const docRef = doc(db, "FILES", "image");
             const docSnap = await getDoc(docRef);
+
+            // Log the document data to see its structure
+            console.log("Document data:", docSnap.data());
+
+            // Check if the document exists
+            if (!docSnap.exists()) {
+                alert("Document does not exist.");
+                return;
+            }
+
             const imageUrl = docSnap.data()[`image${index + 1}`];
 
             if (imageUrl) {
+                // Remove the image from Firebase Storage
                 const storageRef = ref(storage, `importantEvents/image${index + 1}`);
                 await deleteObject(storageRef);
-                await updateDoc(docRef, { [`image${index + 1}`]: "" });
+                console.log(`Successfully deleted storage object: ${storageRef}`);
+
+                // Clear the field in Firestore
+                await updateDoc(docRef, { [`image${index + 1}`]: deleteField() });
+                console.log(`Successfully cleared Firestore value for image${index + 1}`);
 
                 alert("Image deleted successfully.");
                 fetchImportantPhotos(); // Refresh table
+            } else {
+                alert("Image does not exist.");
             }
         } catch (error) {
             console.error("Error deleting important photo: ", error);
@@ -675,6 +742,9 @@ async function deleteImportantPhoto(index) {
         }
     }
 }
+
+
+
 
 // Call fetchImportantPhotos when the section is loaded
 document.querySelector('[data-section="important-events-photos"]').addEventListener('click', fetchImportantPhotos);
@@ -691,6 +761,40 @@ async function fetchUsers() {
         const users = await response.json();
         console.log('Users fetched:', users);
 
+        // Store users in a global variable for searching
+        window.allUsers = users;
+
+        // Display all users initially
+        displayUsers(users);
+    } catch (error) {
+        console.error("Error fetching users:", error);
+    }
+}
+
+document.getElementById('searchButton').addEventListener('click', performSearch);
+
+document.getElementById('searchInput').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        performSearch(); // Trigger search on Enter key press
+    }
+});
+
+function performSearch() {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const filteredUsers = window.allUsers.filter(user => user.email.toLowerCase().includes(searchInput));
+    displayUsers(filteredUsers);
+}
+
+function displayUsers(users) {
+    const usersTableBody = document.getElementById('usersTableBody');
+    usersTableBody.innerHTML = ""; // Clear existing rows
+
+    if (users.length === 0) {
+        // If no users found, display a message
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="2" style="text-align: center;">No users found.</td>`;
+        usersTableBody.appendChild(row);
+    } else {
         users.forEach((user) => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -702,14 +806,21 @@ async function fetchUsers() {
             `;
             usersTableBody.appendChild(row);
         });
-
-        // Add event listeners for reset password and delete account buttons
-        attachEventListeners(); // Call the renamed function
-    } catch (error) {
-        console.error("Error fetching users:", error);
     }
+
+    // Add event listeners for reset password and delete account buttons
+    attachEventListeners();
 }
 
+
+
+document.getElementById('searchButton').addEventListener('click', () => {
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+    const filteredUsers = window.allUsers.filter(user => user.email.toLowerCase().includes(searchInput));
+    displayUsers(filteredUsers);
+});
+
+// Attach event listeners for reset password and delete account buttons
 function attachEventListeners() {
     // Reset Password buttons
     document.querySelectorAll('.resetPasswordBtn').forEach((btn) => {
@@ -718,11 +829,14 @@ function attachEventListeners() {
     });
 
     // Delete User buttons
-    document.querySelectorAll('.deleteUserBtn').forEach((btn) => {
+    document.querySelectorAll('.deleteUser Btn').forEach((btn) => {
         btn.removeEventListener('click', deleteUserHandler); // Remove existing listener
         btn.addEventListener('click', deleteUserHandler);
     });
 }
+
+
+
 
 async function resetPasswordHandler(e) {
     const email = e.target.getAttribute('data-email');
