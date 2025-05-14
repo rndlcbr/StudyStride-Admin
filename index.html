@@ -353,31 +353,38 @@ td:last-child {
                 </table>
             </div>
             <!-- Important Events Photos Section -->
-            <div id="important-events-photos" class="section">
-                <h2>Important Events Photos</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Uploaded Photo</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="importantPhotosTableBody"></tbody>
-                </table>
-            </div>
-            <!-- Users Section -->
-            <div id="users" class="section">
-                <h2>Signed-In Users</h2>
-                <table>
-                    <thead
-                        <tr>
-                            <th>Email</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody"></tbody>
-                </table>
-            </div>
+<div id="important-events-photos" class="section">
+    <h2>Important Events Photos</h2>
+    <button id="uploadPhotoBtn" style="background-color: #ffff00; color: black; margin-bottom: 10px;">Upload Photo</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Uploaded Photo</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="importantPhotosTableBody"></tbody>
+    </table>
+</div>
+
+           <!-- Users Section -->
+<div id="users" class="section">
+    <h2>Signed-In Users</h2>
+    <div style="margin-bottom: 10px;">
+        <input type="text" id="searchInput" placeholder="Search by email" />
+        <button id="searchButton">Search</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+    </table>
+</div>
+
             <!-- Comments Section -->
             <div id="comments" class="section">
                 <h2>Comments Section</h2>
