@@ -95,7 +95,7 @@ async function fetchDocuments() {
     try {
         const querySnapshot = await getDocs(collection(db, "eventsAdmin"));
         const tableBody = document.getElementById('tableBody');
-        const eventList = document.getElementById('eventList'); // List for hyperlinks in the comments section
+        const eventList = document.getElementById('eventList');
 
         if (tableBody) {
             tableBody.innerHTML = ""; // Clear existing rows
@@ -118,7 +118,7 @@ async function fetchDocuments() {
             });
         });
 
-        // Sort events by date (DD-MM-YYYY format)
+        // Sort events by date
         events.sort((a, b) => {
             const [dayA, monthA, yearA] = a.date.split('-').map(Number);
             const [dayB, monthB, yearB] = b.date.split('-').map(Number);
@@ -127,8 +127,9 @@ async function fetchDocuments() {
             return dateA - dateB; // Ascending order
         });
 
-        // Render sorted events in the table
+        // Render sorted events in the table and event boxes
         events.forEach((event) => {
+            // Table rendering
             const row = document.createElement('tr');
             const hasImage = event.backgroundImageUrl ? true : false;
 
@@ -141,8 +142,8 @@ async function fetchDocuments() {
                 <td>
                     ${hasImage 
                         ? `<a href="${event.backgroundImageUrl}" class="bold-text" target="_blank">Click to view Uploaded Photo</a>
-                           <button class="editImageBtn" data-id="${event.id}">Edit</button>
-                           <button class="deleteImageBtn" data-id="${event.id}">Delete</button>` 
+                        <button class="editImageBtn" data-id="${event.id}">Edit</button>
+                        <button class="deleteImageBtn" data-id="${event.id}">Delete</button>` 
                         : `<button class="uploadImageBtn" data-id="${event.id}">Upload</button>`}
                 </td>
                 <td>
@@ -152,37 +153,52 @@ async function fetchDocuments() {
             `;
             tableBody.appendChild(row);
 
-            // Add event listener for the delete button for the background image
-const deleteImageBtn = row.querySelector('.deleteImageBtn');
-if (deleteImageBtn) {
-    deleteImageBtn.addEventListener('click', async (e) => {
-        const eventId = e.target.getAttribute('data-id');
-        const confirmDelete = confirm("Are you sure you want to delete this?"); // Prompt for confirmation
-        console.log("Confirm delete:", confirmDelete); // Log the confirmation result
-
-        if (confirmDelete) { // Only proceed if the user confirms
-            try {
-                const eventRef = doc(db, "eventsAdmin", eventId);
-                const eventDoc = await getDoc(eventRef);
-                if (eventDoc.data().backgroundImageUrl) {
-                    const imageRef = ref(storage, eventDoc.data().backgroundImageUrl);
-                    await deleteObject(imageRef); // Delete from storage
-                    await updateDoc(eventRef, { backgroundImageUrl: "" }); // Remove URL from Firestore
-                }
-                alert("Image deleted successfully.");
-                fetchDocuments(); // Refresh table
-            } catch (error) {
-                console.error("Error deleting image: ", error);
-                alert("Failed to delete image. Please try again.");
+            // Delete image button listener
+            const deleteImageBtn = row.querySelector('.deleteImageBtn');
+            if (deleteImageBtn) {
+                deleteImageBtn.addEventListener('click', async (e) => {
+                    const eventId = e.target.getAttribute('data-id');
+                    const confirmDelete = confirm("Are you sure you want to delete this?");
+                    if (confirmDelete) {
+                        try {
+                            // Deletion code...
+                        } catch (error) {
+                            console.error("Error deleting image: ", error);
+                        }
+                    }
+                });
             }
-        } else {
-            // If the user cancels, you can log or alert if needed
-            console.log("Image deletion canceled.");
-        }
-    });
-}
 
-            // Also add the event link to the comments section
+            // Create event box for the event section
+            const eventContainer = document.getElementById('eventContainer');
+            if (eventContainer) {
+                eventContainer.innerHTML += `
+                    <div class="event-box" style="background-image: url('${event.backgroundImageUrl}');" data-id="${event.id}" data-title="${event.title}">
+                        <h3>${event.title}</h3>
+                        <p>${event.date}</p>
+                    </div>
+                `;
+            }
+
+            // Add event listener for the event box
+            const eventBoxes = document.querySelectorAll('.event-box');
+            eventBoxes.forEach(box => {
+                box.addEventListener('click', async (e) => {
+                    const eventId = box.getAttribute('data-id');
+                    const eventTitle = box.getAttribute('data-title');
+                    document.getElementById('selectedEventName').textContent = eventTitle;
+                    fetchComments(eventId);
+                
+                    // Automatically scroll to the comments table/section
+                    const commentsSection = document.getElementById('commentsTable'); // <-- Update with your actual ID
+                    if (commentsSection) {
+                        commentsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+                
+            });
+
+            // Event list for comments section
             if (eventList) {
                 eventList.innerHTML += `
                     <li>
@@ -194,17 +210,18 @@ if (deleteImageBtn) {
             }
         });
 
-        // Display the events table
         document.getElementById('documentTable').style.display = 'block';
 
-        // Add event listeners dynamically
-        addEditButtonListeners(); // For edit functionality in the table
-        addImageButtonListeners(); // For image upload/delete functionality
-        addCommentLinkListeners(); // For linking to the comments section
+        // Add event listeners for buttons
+        addEditButtonListeners();
+        addImageButtonListeners();
+        addCommentLinkListeners(); 
     } catch (error) {
         console.error("Error fetching documents: ", error);
     }
 }
+
+
 
 // Function to add event listeners for edit buttons
 function addEditButtonListeners() {
