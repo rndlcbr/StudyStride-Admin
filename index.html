@@ -276,6 +276,60 @@ td:last-child {
     margin: 0; /* Remove default margin */
 }
 
+
+/* Container for event boxes */
+#eventContainer {
+    display: flex;
+    flex-wrap: wrap; /* Allows boxes to wrap to the next line if there's not enough space */
+    justify-content: space-between; /* Distributes space between boxes */
+    padding: 20px; /* Adds padding to the container */
+}
+
+/* Styling for event boxes */
+.event-box {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 10px;
+    flex-basis: calc(33.33% - 20px);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+
+    /* Background image settings */
+    background-size: cover;         /* Makes the image cover the entire box */
+    background-position: center;    /* Centers the image */
+    background-repeat: no-repeat;   /* Prevents repeating */
+}
+
+
+/* Image styling to fit inside the box */
+.event-box img {
+    width: 100%; /* Makes the image take full width of the box */
+    height: auto; /* Keeps the aspect ratio */
+    border-radius: 5px; /* Matches the box's rounded corners */
+}
+
+/* Responsive design styling */
+@media (max-width: 768px) {
+    .event-box {
+        flex-basis: calc(50% - 20px); /* 2 columns for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .event-box {
+        flex-basis: calc(100% - 20px); /* Single column for mobile screens */
+    }
+}
+
+
+
+.event-box:hover {
+    opacity: 0.9; /* Slightly dim on hover */
+}
+
+
     </style>
 </head>
 <body>
@@ -385,28 +439,27 @@ td:last-child {
     </table>
 </div>
 
-            <!-- Comments Section -->
-            <div id="comments" class="section">
-                <h2>Comments Section</h2>
-                <ul id="eventList"></ul>
-                <div class="header-container">
-                    <h2 id="selectedEventName" class="center">Select an event to view comments</h2>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Comment</th>
-                            <th>Author</th>
-                            <th>Timestamp</th>
-                            <th>User ID</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="commentsTableBody"></tbody>
-                </table>
-            </div>
-        </div>
+           <!-- Comments Section -->
+<div id="comments" class="section">
+    <h2>Comments Section</h2>
+    <div class="event-container" id="eventContainer"></div> <!-- Added container for events -->
+
+    <div class="header-container">
+        <h2 id="selectedEventName" class="center">Select an event to view comments</h2>
     </div>
+    <table id="commentsTable">
+        <thead>
+            <tr>
+                <th>Comment</th>
+                <th>Author</th>
+                <th>Timestamp</th>
+                <th>User ID</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="commentsTableBody"></tbody>
+    </table>
+</div>
 
     <script type="module" src="app.js"></script>
     <script>
